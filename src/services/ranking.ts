@@ -8,16 +8,50 @@ export interface RankingEntry {
   created_at: string;
 }
 
-/** Guarda una puntuación del usuario logueado. RLS exige que user_id sea el suyo. */
+export type SaveResult = 'record' | 'first' | 'not-beaten';
+
+/**
+ * Guarda la puntuación del usuario quedándose solo con su mejor marca por modo.
+ * Devuelve:
+ *  - 'first'      → primera marca registrada en ese modo
+ *  - 'record'     → ha superado su marca anterior
+ *  - 'not-beaten' → no ha superado su mejor marca (no se sobreescribe)
+ * RLS exige que user_id sea el del propio usuario.
+ */
 export async function saveScore(
   userId: string,
   score: number,
   mode: GameMode
-): Promise<void> {
+): Promise<SaveResult> {
+  // Leemos la mejor marca actual para decidir qué hacer.
+  const { data: existing } = await supabase
+    .from('scores')
+    .select('id, score')
+    .eq('user_id', userId)
+    .eq('mode', mode)
+    .maybeSingle();
+
+  if (existing) {
+    // Ya hay una fila para este modo.
+    if (existing.score >= score) {
+      // La marca guardada es igual o mejor: no tocamos nada.
+      return 'not-beaten';
+    }
+    // Superó su récord: actualizamos esa fila (usa la política UPDATE).
+    const { error } = await supabase
+      .from('scores')
+      .update({ score, created_at: new Date().toISOString() })
+      .eq('id', existing.id);
+    if (error) throw error;
+    return 'record';
+  }
+
+  // Primera marca en este modo: insertamos (usa la política INSERT).
   const { error } = await supabase
     .from('scores')
     .insert({ user_id: userId, score, mode });
   if (error) throw error;
+  return 'first';
 }
 
 /** Top global o filtrado por modo. Une scores con el nombre de usuario. */
