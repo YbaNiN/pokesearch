@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { GameModeSelector } from '@/components/GameModeSelector';
 import { ScoreBoard } from '@/components/ScoreBoard';
 import { Settings } from '@/components/Settings';
+import { AccountBar } from '@/components/AccountBar';
+import { ContactBalls } from '@/components/ContactBalls';
 import { useGameStore } from '@/store/gameStore';
 import { sfx } from '@/utils/sound';
 
@@ -20,6 +22,10 @@ export function StartScreen() {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center gap-8 px-4 py-10">
+      <div className="w-full">
+        <AccountBar />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,6 +61,17 @@ export function StartScreen() {
         ▶ JUGAR
       </motion.button>
 
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => navigate('/ranking')}
+        className="w-full rounded-2xl border-4 border-poke-black bg-poke-blue px-6 py-3 font-display text-sm text-white shadow-retro transition hover:brightness-110"
+      >
+        🏆 RANKING
+      </motion.button>
+
       <div className="w-full">
         <h2 className="mb-3 font-display text-xs text-poke-white/60">ESTADÍSTICAS</h2>
         <ScoreBoard />
@@ -63,6 +80,11 @@ export function StartScreen() {
       <div className="w-full">
         <h2 className="mb-3 font-display text-xs text-poke-white/60">AJUSTES</h2>
         <Settings />
+      </div>
+
+      <div className="w-full">
+        <h2 className="mb-3 font-display text-xs text-poke-white/60">CONTACTO</h2>
+        <ContactBalls />
       </div>
 
       <p className="mt-4 text-center font-body text-xs text-poke-white/40">
