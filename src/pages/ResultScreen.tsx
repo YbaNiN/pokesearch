@@ -5,10 +5,10 @@ import { useGameStore } from '@/store/gameStore';
 import { ScoreBoard } from '@/components/ScoreBoard';
 import { AuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/context/AuthContext';
-import { saveScore } from '@/services/ranking';
+import { saveScore, type SaveResult } from '@/services/ranking';
 import { sfx } from '@/utils/sound';
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+type SaveState = 'idle' | 'saving' | 'error' | SaveResult;
 
 export function ResultScreen() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export function ResultScreen() {
     savedRef.current = true;
     setSaveState('saving');
     saveScore(user.id, score, mode)
-      .then(() => setSaveState('saved'))
+      .then((result) => setSaveState(result))
       .catch(() => setSaveState('error'));
   }, [user, score, mode]);
 
@@ -71,9 +71,19 @@ export function ResultScreen() {
           {user && saveState === 'saving' && (
             <p className="font-body text-sm text-poke-white/60">Guardando en el ranking…</p>
           )}
-          {user && saveState === 'saved' && (
+          {user && saveState === 'first' && (
             <p className="font-body text-sm text-poke-yellow">
-              ✓ Puntuación guardada en el ranking
+              ✓ Primera marca registrada en el ranking
+            </p>
+          )}
+          {user && saveState === 'record' && (
+            <p className="font-body text-sm text-poke-yellow">
+              ★ ¡Nuevo récord! Tu marca del ranking ha mejorado
+            </p>
+          )}
+          {user && saveState === 'not-beaten' && (
+            <p className="font-body text-sm text-poke-white/60">
+              No superaste tu mejor marca en el ranking
             </p>
           )}
           {user && saveState === 'error' && (
