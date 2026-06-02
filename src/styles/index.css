@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: '"Pixelify Sans"', 'Trebuchet MS', sans-serif;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59, 76, 202, 0.35), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(255, 203, 5, 0.18), transparent 45%),
+    #0a0a14;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* CRT scanline overlay */
+.crt::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.18),
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 50;
+  mix-blend-mode: multiply;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 2px #0a0a14;
+  paint-order: stroke fill;
+}
+
+/* Silueta negra a partir del artwork oficial */
+.silhouette {
+  filter: brightness(0) saturate(100%);
+  transition: filter 0.6s ease;
+}
+
+.revealed {
+  filter: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #3b4cca;
+  border-radius: 6px;
+}
