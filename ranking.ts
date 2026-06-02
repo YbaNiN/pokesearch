@@ -23,28 +23,35 @@ export async function saveScore(
   score: number,
   mode: GameMode
 ): Promise<SaveResult> {
-  // Leemos la mejor marca actual para no sobreescribir con una menor.
+  // Leemos la mejor marca actual para decidir qué hacer.
   const { data: existing } = await supabase
     .from('scores')
-    .select('score')
+    .select('id, score')
     .eq('user_id', userId)
     .eq('mode', mode)
     .maybeSingle();
 
-  if (existing && existing.score >= score) {
-    // La marca guardada ya es igual o mejor: no hacemos nada.
-    return 'not-beaten';
+  if (existing) {
+    // Ya hay una fila para este modo.
+    if (existing.score >= score) {
+      // La marca guardada es igual o mejor: no tocamos nada.
+      return 'not-beaten';
+    }
+    // Superó su récord: actualizamos esa fila (usa la política UPDATE).
+    const { error } = await supabase
+      .from('scores')
+      .update({ score, created_at: new Date().toISOString() })
+      .eq('id', existing.id);
+    if (error) throw error;
+    return 'record';
   }
 
+  // Primera marca en este modo: insertamos (usa la política INSERT).
   const { error } = await supabase
     .from('scores')
-    .upsert(
-      { user_id: userId, score, mode },
-      { onConflict: 'user_id,mode' }
-    );
+    .insert({ user_id: userId, score, mode });
   if (error) throw error;
-
-  return existing ? 'record' : 'first';
+  return 'first';
 }
 
 /** Top global o filtrado por modo. Une scores con el nombre de usuario. */
