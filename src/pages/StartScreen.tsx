@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GameModeSelector } from '@/components/GameModeSelector';
+import { GenerationSelector } from '@/components/GenerationSelector';
 import { ScoreBoard } from '@/components/ScoreBoard';
 import { Settings } from '@/components/Settings';
 import { AccountBar } from '@/components/AccountBar';
@@ -50,6 +51,16 @@ export function StartScreen() {
         <GameModeSelector />
       </motion.div>
 
+      <motion.div
+        initial={{ opacity: 0, scale: 0.85 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.15 }}
+        className="w-full"
+      >
+        <h2 className="mb-3 font-display text-xs text-poke-white/60">GENERACIÓN</h2>
+        <GenerationSelector />
+      </motion.div>
+
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -70,17 +81,6 @@ export function StartScreen() {
         className="w-full rounded-2xl border-4 border-poke-black bg-poke-blue px-6 py-3 font-display text-sm text-white shadow-retro transition hover:brightness-110"
       >
         🏆 RANKING
-      </motion.button>
-
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        whileTap={{ scale: 0.96 }}
-        onClick={() => navigate('/pokedex')}
-        className="w-full rounded-2xl border-4 border-poke-black bg-poke-darkblue/80 px-6 py-3 font-display text-sm text-white shadow-retro transition hover:brightness-110"
-      >
-        📕 POKÉDEX
       </motion.button>
 
       <div className="w-full">
