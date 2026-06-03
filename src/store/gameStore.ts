@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameMode, RoundResult, Stats, Settings } from '@/types';
+import type { GameMode, RoundResult, Stats, Settings, Generation } from '@/types';
 import { accuracy } from '@/utils/helpers';
 
 interface GameState {
   mode: GameMode;
+  generation: Generation;
   score: number;
   streak: number;
   lastResult: RoundResult;
@@ -12,6 +13,7 @@ interface GameState {
   settings: Settings;
 
   setMode: (mode: GameMode) => void;
+  setGeneration: (generation: Generation) => void;
   startGame: () => void;
   registerCorrect: () => void;
   registerWrong: (timeout: boolean) => void;
@@ -34,6 +36,7 @@ export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       mode: 'classic',
+      generation: 'gen1',
       score: 0,
       streak: 0,
       lastResult: 'idle',
@@ -41,6 +44,8 @@ export const useGameStore = create<GameState>()(
       settings: { soundEnabled: true },
 
       setMode: (mode) => set({ mode }),
+
+      setGeneration: (generation) => set({ generation }),
 
       startGame: () =>
         set((s) => ({
@@ -91,7 +96,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'wiapt-storage',
-      partialize: (s) => ({ stats: s.stats, settings: s.settings, mode: s.mode }),
+      partialize: (s) => ({ stats: s.stats, settings: s.settings, mode: s.mode, generation: s.generation }),
     }
   )
 );
