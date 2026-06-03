@@ -18,7 +18,7 @@ export async function catchPokemon(
   if (error) throw error;
 }
 
-/** Devuelve los ids (1-151) de los Pokémon capturados por el usuario. */
+/** Devuelve los ids (1-1025) de los Pokémon capturados por el usuario. */
 export async function fetchCaughtIds(userId: string): Promise<number[]> {
   const { data, error } = await supabase
     .from('pokedex')
