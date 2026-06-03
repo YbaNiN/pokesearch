@@ -59,6 +59,13 @@ export const sfx = {
     tone({ freq: 587.33, duration: 0.08, delay: 0.07 });
     tone({ freq: 880, duration: 0.3, delay: 0.14 });
   },
+  shiny() {
+    // Arpegio cristalino ascendente (sensación de "destello").
+    tone({ freq: 1318.51, duration: 0.1, type: 'triangle', gain: 0.06, delay: 0.0 });
+    tone({ freq: 1567.98, duration: 0.1, type: 'triangle', gain: 0.06, delay: 0.1 });
+    tone({ freq: 2093.0, duration: 0.12, type: 'triangle', gain: 0.06, delay: 0.2 });
+    tone({ freq: 2637.02, duration: 0.35, type: 'triangle', gain: 0.05, delay: 0.32 });
+  },
   resume() {
     const ac = getCtx();
     if (ac && ac.state === 'suspended') void ac.resume();
