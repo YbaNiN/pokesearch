@@ -12,16 +12,25 @@ export const normalize = (s: string): string =>
     .replace(/[^a-z0-9]/g, '')
     .trim();
 
-export const randomId = (): number =>
-  Math.floor(Math.random() * (GEN1_RANGE.max - GEN1_RANGE.min + 1)) +
-  GEN1_RANGE.min;
+/** Id aleatorio dentro de un rango {min,max} (por defecto Gen 1). */
+export const randomId = (
+  range: { min: number; max: number } = GEN1_RANGE
+): number =>
+  Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
 
-/** N ids únicos dentro del rango Gen 1. */
-export const randomIds = (count: number, exclude: number[] = []): number[] => {
+/** N ids únicos dentro del rango indicado (por defecto Gen 1). */
+export const randomIds = (
+  count: number,
+  exclude: number[] = [],
+  range: { min: number; max: number } = GEN1_RANGE
+): number[] => {
   const set = new Set<number>(exclude);
   const result: number[] = [];
-  while (result.length < count) {
-    const id = randomId();
+  // Evita bucle infinito si el rango es más pequeño que count.
+  const span = range.max - range.min + 1;
+  const target = Math.min(count, Math.max(0, span - exclude.length));
+  while (result.length < target) {
+    const id = randomId(range);
     if (!set.has(id)) {
       set.add(id);
       result.push(id);
