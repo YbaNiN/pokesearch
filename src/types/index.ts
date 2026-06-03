@@ -1,5 +1,16 @@
 export type GameMode = 'classic' | 'hard' | 'expert' | 'infinite';
 
+export type Generation = 'all' | 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5'
+  | 'gen6' | 'gen7' | 'gen8' | 'gen9';
+
+export interface GenConfig {
+  id: Generation;
+  label: string;     // etiqueta corta (ej. "Gen 1")
+  region: string;    // región asociada (ej. "Kanto")
+  min: number;       // primer id de la dex nacional (0 para 'all')
+  max: number;       // último id
+}
+
 export interface ModeConfig {
   id: GameMode;
   label: string;
