@@ -5,6 +5,7 @@ import { TYPE_COLORS, TYPE_LABELS } from '@/utils/constants';
 interface RevealInfoProps {
   pokemon: Pokemon;
   result: RoundResult;
+  shiny?: boolean;
 }
 
 const MESSAGES: Record<Exclude<RoundResult, 'idle'>, { text: string; color: string }> = {
@@ -13,7 +14,7 @@ const MESSAGES: Record<Exclude<RoundResult, 'idle'>, { text: string; color: stri
   timeout: { text: '¡Se acabó el tiempo!', color: '#FFCB05' },
 };
 
-export function RevealInfo({ pokemon, result }: RevealInfoProps) {
+export function RevealInfo({ pokemon, result, shiny = false }: RevealInfoProps) {
   if (result === 'idle') return null;
   const msg = MESSAGES[result];
 
@@ -23,6 +24,21 @@ export function RevealInfo({ pokemon, result }: RevealInfoProps) {
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-3 text-center"
     >
+      {shiny && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0, rotate: -8 }}
+          animate={{ scale: [0, 1.2, 1], opacity: 1, rotate: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="rounded-full border-2 border-poke-black px-4 py-1 font-display text-xs text-poke-black shadow-retro"
+          style={{
+            background: 'linear-gradient(90deg, #7FFBFF, #FFCB05)',
+            boxShadow: '0 0 18px rgba(127,251,255,0.7)',
+          }}
+        >
+          ✨ ¡SHINY! ✨
+        </motion.div>
+      )}
+
       <motion.h2
         initial={{ scale: 0.6 }}
         animate={{ scale: [0.6, 1.15, 1] }}
@@ -36,6 +52,7 @@ export function RevealInfo({ pokemon, result }: RevealInfoProps) {
       <p className="font-display text-2xl text-white">
         <span className="text-poke-white/50">#{String(pokemon.id).padStart(3, '0')}</span>{' '}
         {pokemon.displayName}
+        {shiny && <span className="ml-2 align-middle text-lg">✨</span>}
       </p>
 
       <div className="flex flex-wrap justify-center gap-2">
