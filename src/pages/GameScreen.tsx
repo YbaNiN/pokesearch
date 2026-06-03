@@ -12,6 +12,8 @@ import { RevealInfo } from '@/components/RevealInfo';
 import { usePokemon, usePokemonNames, useChoices } from '@/hooks/usePokemon';
 import { useTimer } from '@/hooks/useTimer';
 import { useGameStore } from '@/store/gameStore';
+import { useAuth } from '@/context/AuthContext';
+import { catchPokemon } from '@/services/pokedex';
 import { MODES } from '@/utils/constants';
 import { normalize, randomId } from '@/utils/helpers';
 import { sfx } from '@/utils/sound';
@@ -25,6 +27,7 @@ export function GameScreen() {
   const registerCorrect = useGameStore((s) => s.registerCorrect);
   const registerWrong = useGameStore((s) => s.registerWrong);
   const resetRound = useGameStore((s) => s.resetRound);
+  const { user } = useAuth();
 
   const [targetId, setTargetId] = useState(() => randomId());
   const [revealed, setRevealed] = useState(false);
@@ -77,6 +80,13 @@ export function GameScreen() {
     if (correct) {
       registerCorrect();
       playSfx(sfx.correct);
+      // Registra el Pokémon en la Pokédex del usuario (si hay sesión).
+      // Es "fire-and-forget": no bloquea el juego si falla.
+      if (user) {
+        catchPokemon(user.id, pokemon.id).catch(() => {
+          /* silencioso: la captura no debe interrumpir la partida */
+        });
+      }
     } else {
       registerWrong(false);
       playSfx(sfx.wrong);
