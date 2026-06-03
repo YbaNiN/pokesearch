@@ -14,8 +14,8 @@ import { useTimer } from '@/hooks/useTimer';
 import { useGameStore } from '@/store/gameStore';
 import { useAuth } from '@/context/AuthContext';
 import { catchPokemon } from '@/services/pokedex';
-import { MODES } from '@/utils/constants';
-import { normalize, randomId } from '@/utils/helpers';
+import { MODES, SHINY_ODDS } from '@/utils/constants';
+import { normalize, randomId, rollShiny } from '@/utils/helpers';
 import { sfx } from '@/utils/sound';
 
 export function GameScreen() {
@@ -30,6 +30,7 @@ export function GameScreen() {
   const { user } = useAuth();
 
   const [targetId, setTargetId] = useState(() => randomId());
+  const [isShiny, setIsShiny] = useState(() => rollShiny(SHINY_ODDS));
   const [revealed, setRevealed] = useState(false);
   const [selectedId, setSelectedId] = useState<number | undefined>(undefined);
   const settledRef = useRef(false);
@@ -92,6 +93,7 @@ export function GameScreen() {
       playSfx(sfx.wrong);
     }
     playSfx(sfx.reveal);
+    if (isShiny) playSfx(sfx.shiny);
   };
 
   const nextRound = () => {
@@ -104,6 +106,7 @@ export function GameScreen() {
     setRevealed(false);
     setSelectedId(undefined);
     setTargetId(randomId());
+    setIsShiny(rollShiny(SHINY_ODDS));
   };
 
   const quit = () => {
@@ -150,7 +153,7 @@ export function GameScreen() {
             />
           </div>
         ) : (
-          <PokemonCard pokemon={pokemon} revealed={revealed} result={lastResult} />
+          <PokemonCard pokemon={pokemon} revealed={revealed} result={lastResult} shiny={isShiny} />
         )}
       </div>
 
@@ -197,7 +200,7 @@ export function GameScreen() {
                   onSelect={() => {}}
                 />
               )}
-              <RevealInfo pokemon={pokemon} result={lastResult} />
+              <RevealInfo pokemon={pokemon} result={lastResult} shiny={isShiny} />
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
