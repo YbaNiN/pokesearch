@@ -41,3 +41,7 @@ export const shuffle = <T>(arr: T[]): T[] => {
 
 export const accuracy = (correct: number, rounds: number): number =>
   rounds === 0 ? 0 : Math.round((correct / rounds) * 100);
+
+/** Tira el dado de shiny: true con probabilidad 1/odds. */
+export const rollShiny = (odds: number): boolean =>
+  Math.floor(Math.random() * odds) === 0;
