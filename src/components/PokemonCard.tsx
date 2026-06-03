@@ -5,14 +5,27 @@ interface PokemonCardProps {
   pokemon: Pokemon;
   revealed: boolean;
   result: RoundResult;
+  shiny?: boolean;
 }
 
-export function PokemonCard({ pokemon, revealed, result }: PokemonCardProps) {
+// Posiciones de las estrellas de destello shiny (alrededor del artwork).
+const SPARKLES = [
+  { top: '6%', left: '14%', size: 26, delay: 0 },
+  { top: '18%', left: '78%', size: 20, delay: 0.12 },
+  { top: '62%', left: '8%', size: 18, delay: 0.2 },
+  { top: '74%', left: '82%', size: 24, delay: 0.08 },
+  { top: '40%', left: '46%', size: 16, delay: 0.28 },
+];
+
+export function PokemonCard({ pokemon, revealed, result, shiny = false }: PokemonCardProps) {
   const shake = result === 'incorrect' || result === 'timeout';
+  const showShiny = revealed && shiny;
+  // Usa el artwork shiny solo al revelar; la silueta nunca cambia.
+  const src = showShiny ? pokemon.shinyImage : pokemon.image;
 
   return (
     <div className="relative mx-auto flex aspect-square w-full max-w-[340px] items-center justify-center">
-      {/* halo de revelación */}
+      {/* halo de revelación (dorado normal, cian intenso si es shiny) */}
       <AnimatePresence>
         {revealed && (
           <motion.div
@@ -21,7 +34,11 @@ export function PokemonCard({ pokemon, revealed, result }: PokemonCardProps) {
             animate={{ scale: 2.4, opacity: 0 }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="pointer-events-none absolute inset-0 rounded-full"
-            style={{ background: 'radial-gradient(circle, #FFCB05 0%, transparent 60%)' }}
+            style={{
+              background: showShiny
+                ? 'radial-gradient(circle, #7FFBFF 0%, #FFCB05 35%, transparent 65%)'
+                : 'radial-gradient(circle, #FFCB05 0%, transparent 60%)',
+            }}
           />
         )}
       </AnimatePresence>
@@ -39,6 +56,27 @@ export function PokemonCard({ pokemon, revealed, result }: PokemonCardProps) {
         )}
       </AnimatePresence>
 
+      {/* estrellas shiny */}
+      <AnimatePresence>
+        {showShiny &&
+          SPARKLES.map((s, i) => (
+            <motion.span
+              key={`sparkle-${i}`}
+              className="pointer-events-none absolute z-30 select-none"
+              style={{ top: s.top, left: s.left, fontSize: s.size }}
+              initial={{ scale: 0, opacity: 0, rotate: -30 }}
+              animate={{
+                scale: [0, 1.3, 1, 1.15, 1],
+                opacity: [0, 1, 1, 1, 0.9],
+                rotate: [-30, 0, 10, 0, 0],
+              }}
+              transition={{ duration: 1, delay: 0.2 + s.delay, ease: 'easeOut' }}
+            >
+              ✨
+            </motion.span>
+          ))}
+      </AnimatePresence>
+
       <motion.div
         key={`${pokemon.id}-${revealed}`}
         className="relative z-10 h-full w-full"
@@ -51,12 +89,14 @@ export function PokemonCard({ pokemon, revealed, result }: PokemonCardProps) {
         transition={{ duration: 0.55, ease: 'easeOut' }}
       >
         <img
-          src={pokemon.image}
+          src={src}
           alt={revealed ? pokemon.displayName : 'Silueta misteriosa'}
           draggable={false}
-          className={`h-full w-full select-none object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)] ${
-            revealed ? 'revealed' : 'silhouette'
-          }`}
+          className={`h-full w-full select-none object-contain ${
+            showShiny
+              ? 'drop-shadow-[0_0_22px_rgba(127,251,255,0.8)]'
+              : 'drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)]'
+          } ${revealed ? 'revealed' : 'silhouette'}`}
         />
       </motion.div>
     </div>
