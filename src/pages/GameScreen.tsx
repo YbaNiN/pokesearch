@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -14,7 +14,7 @@ import { useTimer } from '@/hooks/useTimer';
 import { useGameStore } from '@/store/gameStore';
 import { useAuth } from '@/context/AuthContext';
 import { catchPokemon } from '@/services/pokedex';
-import { MODES, SHINY_ODDS } from '@/utils/constants';
+import { MODES, SHINY_ODDS, GENERATIONS, genRange } from '@/utils/constants';
 import { normalize, randomId, rollShiny } from '@/utils/helpers';
 import { sfx } from '@/utils/sound';
 
@@ -22,6 +22,8 @@ export function GameScreen() {
   const navigate = useNavigate();
   const mode = useGameStore((s) => s.mode);
   const cfg = MODES[mode];
+  const generation = useGameStore((s) => s.generation);
+  const range = useMemo(() => genRange(generation), [generation]);
   const soundEnabled = useGameStore((s) => s.settings.soundEnabled);
   const lastResult = useGameStore((s) => s.lastResult);
   const registerCorrect = useGameStore((s) => s.registerCorrect);
@@ -29,15 +31,24 @@ export function GameScreen() {
   const resetRound = useGameStore((s) => s.resetRound);
   const { user } = useAuth();
 
-  const [targetId, setTargetId] = useState(() => randomId());
+  const [targetId, setTargetId] = useState(() => randomId(range));
   const [isShiny, setIsShiny] = useState(() => rollShiny(SHINY_ODDS));
   const [revealed, setRevealed] = useState(false);
   const [selectedId, setSelectedId] = useState<number | undefined>(undefined);
   const settledRef = useRef(false);
 
   const { data: pokemon, isLoading } = usePokemon(targetId);
-  const { data: names = [] } = usePokemonNames();
-  const { data: choices = [] } = useChoices(cfg.autocomplete ? undefined : pokemon);
+  const { data: allNames = [] } = usePokemonNames();
+  const { data: choices = [] } = useChoices(
+    cfg.autocomplete ? undefined : pokemon,
+    range
+  );
+
+  // Nombres restringidos a la generación elegida para el autocompletado.
+  const names = useMemo(
+    () => allNames.slice(range.min - 1, range.max),
+    [allNames, range.min, range.max]
+  );
 
   const playSfx = useCallback(
     (fn: () => void) => {
@@ -105,7 +116,7 @@ export function GameScreen() {
     settledRef.current = false;
     setRevealed(false);
     setSelectedId(undefined);
-    setTargetId(randomId());
+    setTargetId(randomId(range));
     setIsShiny(rollShiny(SHINY_ODDS));
   };
 
@@ -124,7 +135,9 @@ export function GameScreen() {
         >
           ✕ SALIR
         </button>
-        <span className="font-display text-[10px] text-poke-yellow">{cfg.label.toUpperCase()}</span>
+        <span className="font-display text-[10px] text-poke-yellow">
+          {cfg.label.toUpperCase()} · {GENERATIONS[generation].label.toUpperCase()}
+        </span>
       </div>
 
       <ScoreBoard compact />
