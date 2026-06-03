@@ -2,6 +2,9 @@ import type { GameMode, ModeConfig, PokemonType } from '@/types';
 
 export const GEN1_RANGE = { min: 1, max: 151 } as const;
 
+/** Probabilidad de shiny por ronda (clásico Gen 2-5): 1 entre 512. */
+export const SHINY_ODDS = 512;
+
 export const MODES: Record<GameMode, ModeConfig> = {
   classic: {
     id: 'classic',
