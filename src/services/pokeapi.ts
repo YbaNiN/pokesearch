@@ -48,8 +48,13 @@ export async function fetchPokemon(id: number): Promise<Pokemon> {
   };
 }
 
-export async function fetchPokemonList(limit = 151): Promise<string[]> {
-  if (nameCache) return nameCache;
+/**
+ * Lista de nombres oficiales ordenada por id de la dex nacional.
+ * `names[i]` corresponde al Pokémon con id `i + 1`.
+ * Se cachea por el límite máximo solicitado para no repetir la petición.
+ */
+export async function fetchPokemonList(limit = 1025): Promise<string[]> {
+  if (nameCache && nameCache.length >= limit) return nameCache.slice(0, limit);
   const res = await fetch(`${BASE}/pokemon?limit=${limit}&offset=0`);
   if (!res.ok) throw new Error(`PokéAPI error ${res.status}`);
   const data: { results: { name: string }[] } = await res.json();
