@@ -18,6 +18,7 @@ export interface Pokemon {
   name: string;          // nombre oficial en minúsculas (api)
   displayName: string;   // capitalizado para mostrar
   image: string;         // artwork oficial
+  shinyImage: string;    // artwork oficial shiny
   sprite: string;        // sprite oficial pequeño
   types: PokemonType[];
 }
