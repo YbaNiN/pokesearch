@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -5,9 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchCaughtIds } from '@/services/pokedex';
 import { usePokemonNames } from '@/hooks/usePokemon';
 import { capitalize } from '@/utils/helpers';
-import { GEN1_RANGE } from '@/utils/constants';
-
-const TOTAL = GEN1_RANGE.max; // 151
+import { GENERATIONS, GEN_ORDER, genRange } from '@/utils/constants';
+import type { Generation } from '@/types';
 
 /** Sprite oficial pequeño por id (mismo CDN que usa PokéAPI). */
 const spriteUrl = (id: number) =>
@@ -16,6 +16,7 @@ const spriteUrl = (id: number) =>
 export function PokedexScreen() {
   const navigate = useNavigate();
   const { user, username } = useAuth();
+  const [filter, setFilter] = useState<Generation>('all');
 
   const { data: names = [] } = usePokemonNames();
 
@@ -30,9 +31,19 @@ export function PokedexScreen() {
     staleTime: 30_000,
   });
 
-  const caught = new Set(caughtIds);
-  const total = caught.size;
-  const percent = Math.round((total / TOTAL) * 100);
+  const caught = useMemo(() => new Set(caughtIds), [caughtIds]);
+
+  // Rango visible e ids según el filtro de generación.
+  const range = genRange(filter);
+  const ids = useMemo(
+    () => Array.from({ length: range.max - range.min + 1 }, (_, i) => range.min + i),
+    [range.min, range.max]
+  );
+
+  // Progreso del tramo filtrado.
+  const caughtInRange = ids.filter((id) => caught.has(id)).length;
+  const totalInRange = ids.length;
+  const percent = totalInRange ? Math.round((caughtInRange / totalInRange) * 100) : 0;
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-5 px-4 py-6">
@@ -66,14 +77,41 @@ export function PokedexScreen() {
 
       {user && (
         <>
+          {/* filtros por generación */}
+          <div className="flex flex-wrap gap-2">
+            {GEN_ORDER.map((id) => {
+              const cfg = GENERATIONS[id];
+              const active = filter === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setFilter(id)}
+                  title={cfg.region}
+                  className={`rounded-lg border-2 border-poke-black px-3 py-1.5 font-body text-xs font-semibold transition ${
+                    active
+                      ? 'bg-poke-yellow text-poke-black'
+                      : 'bg-poke-darkblue/60 text-white hover:bg-poke-blue/60'
+                  }`}
+                >
+                  {cfg.label}
+                </button>
+              );
+            })}
+          </div>
+
           {/* progreso */}
           <div className="rounded-2xl border-4 border-poke-black bg-poke-darkblue/50 p-4">
             <div className="mb-2 flex items-center justify-between font-body text-sm">
               <span className="font-semibold text-white">
                 {username ?? 'Entrenador'}
+                {filter !== 'all' && (
+                  <span className="ml-2 text-poke-white/50">
+                    · {GENERATIONS[filter].region}
+                  </span>
+                )}
               </span>
               <span className="font-display text-xs text-poke-yellow">
-                {total}/{TOTAL}
+                {caughtInRange}/{totalInRange}
               </span>
             </div>
             <div className="h-4 w-full overflow-hidden rounded-full border-2 border-poke-black bg-poke-black/60">
@@ -104,7 +142,7 @@ export function PokedexScreen() {
 
           {!isLoading && !isError && (
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
-              {Array.from({ length: TOTAL }, (_, i) => i + 1).map((id) => {
+              {ids.map((id, idx) => {
                 const isCaught = caught.has(id);
                 const name = names[id - 1];
                 const num = `#${String(id).padStart(3, '0')}`;
@@ -113,7 +151,7 @@ export function PokedexScreen() {
                     key={id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: Math.min(id, 30) * 0.01 }}
+                    transition={{ delay: Math.min(idx, 30) * 0.01 }}
                     className={`flex flex-col items-center gap-1 rounded-xl border-4 border-poke-black p-2 shadow-retro ${
                       isCaught ? 'bg-poke-darkblue/70' : 'bg-poke-black/50'
                     }`}
@@ -122,21 +160,15 @@ export function PokedexScreen() {
                       {num}
                     </span>
                     <div className="flex aspect-square w-full items-center justify-center">
-                      {isCaught ? (
-                        <img
-                          src={spriteUrl(id)}
-                          alt={name ? capitalize(name) : num}
-                          draggable={false}
-                          className="h-full w-full select-none object-contain"
-                        />
-                      ) : (
-                        <img
-                          src={spriteUrl(id)}
-                          alt="No capturado"
-                          draggable={false}
-                          className="h-full w-full select-none object-contain opacity-60 [filter:brightness(0)_saturate(100%)]"
-                        />
-                      )}
+                      <img
+                        src={spriteUrl(id)}
+                        alt={isCaught && name ? capitalize(name) : 'No capturado'}
+                        draggable={false}
+                        loading="lazy"
+                        className={`h-full w-full select-none object-contain ${
+                          isCaught ? '' : 'opacity-60 [filter:brightness(0)_saturate(100%)]'
+                        }`}
+                      />
                     </div>
                     <span
                       className={`w-full truncate text-center font-body text-[11px] font-semibold ${
