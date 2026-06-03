@@ -9,8 +9,12 @@ interface RawPokemon {
   types: { type: { name: string } }[];
   sprites: {
     front_default: string | null;
+    front_shiny: string | null;
     other: {
-      'official-artwork': { front_default: string | null };
+      'official-artwork': {
+        front_default: string | null;
+        front_shiny: string | null;
+      };
     };
   };
 }
@@ -28,11 +32,17 @@ export async function fetchPokemon(id: number): Promise<Pokemon> {
     data.sprites.front_default ??
     '';
 
+  const shinyArtwork =
+    data.sprites.other['official-artwork'].front_shiny ??
+    data.sprites.front_shiny ??
+    artwork;
+
   return {
     id: data.id,
     name: data.name,
     displayName: capitalize(data.name),
     image: artwork,
+    shinyImage: shinyArtwork,
     sprite: data.sprites.front_default ?? artwork,
     types: data.types.map((t) => t.type.name as PokemonType),
   };
