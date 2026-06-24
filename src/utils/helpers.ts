@@ -54,3 +54,26 @@ export const accuracy = (correct: number, rounds: number): number =>
 /** Tira el dado de shiny: true con probabilidad 1/odds. */
 export const rollShiny = (odds: number): boolean =>
   Math.floor(Math.random() * odds) === 0;
+
+/**
+ * Genera N filtros CSS de recoloreo distintos entre sí para los "shiny falsos"
+ * del modo Adivina el Shiny. Cada filtro gira el tono (hue-rotate) una cantidad
+ * claramente diferente y ajusta saturación/brillo para que ningún falso se
+ * parezca al shiny oficial. Robusto: no depende de CORS ni de canvas.
+ *
+ * Se barajan los giros disponibles y se toman los primeros `count`, así cada
+ * ronda muestra una combinación de recoloreos diferente.
+ */
+export const fakeShinyFilters = (count: number): string[] => {
+  // Giros de tono repartidos por la rueda de color, evitando 0º (sin cambio).
+  const hues = [40, 80, 120, 160, 200, 240, 280, 320];
+  const sats = [1.15, 0.85, 1.3, 0.7, 1.1, 0.9];
+  const brights = [1.05, 0.95, 1.1, 0.9];
+
+  const shuffledHues = shuffle(hues).slice(0, count);
+  return shuffledHues.map((hue, i) => {
+    const sat = sats[i % sats.length];
+    const bright = brights[i % brights.length];
+    return `hue-rotate(${hue}deg) saturate(${sat}) brightness(${bright})`;
+  });
+};
