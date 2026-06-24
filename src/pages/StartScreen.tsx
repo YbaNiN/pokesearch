@@ -94,6 +94,21 @@ export function StartScreen() {
         📕 POKÉDEX
       </motion.button>
 
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.32 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => navigate('/shiny')}
+        className="w-full rounded-2xl border-4 border-poke-black px-6 py-3 font-display text-sm text-white shadow-retro transition hover:brightness-110"
+        style={{
+          background: 'linear-gradient(90deg, #1B2A6B, #2E5A8F)',
+          boxShadow: '0 6px 0 0 rgba(0,0,0,0.35), 0 0 18px rgba(127,251,255,0.35)',
+        }}
+      >
+        ✨ ADIVINA EL SHINY
+      </motion.button>
+
       <div className="w-full">
         <h2 className="mb-3 font-display text-xs text-poke-white/60">ESTADÍSTICAS</h2>
         <ScoreBoard />
