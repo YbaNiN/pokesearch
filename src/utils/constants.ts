@@ -62,6 +62,42 @@ export const MODES: Record<GameMode, ModeConfig> = {
   },
 };
 
+/**
+ * Submodos del modo "Adivina el Shiny". Reutiliza la forma de ModeConfig
+ * (mismo tipo GameMode) pero con tiempos/descripciones propios del modo shiny.
+ * No tienen autocompletado: siempre son 4 opciones visuales.
+ */
+export const SHINY_MODES: Record<GameMode, ModeConfig> = {
+  classic: {
+    id: 'classic',
+    label: 'Clásico',
+    seconds: 10,
+    autocomplete: false,
+    description: '10 segundos · tranquilo',
+  },
+  hard: {
+    id: 'hard',
+    label: 'Difícil',
+    seconds: 5,
+    autocomplete: false,
+    description: '5 segundos · vista rápida',
+  },
+  expert: {
+    id: 'expert',
+    label: 'Experto',
+    seconds: 3,
+    autocomplete: false,
+    description: '3 segundos · ojo de cazador',
+  },
+  infinite: {
+    id: 'infinite',
+    label: 'Infinito',
+    seconds: 10,
+    autocomplete: false,
+    description: 'Hasta el primer fallo',
+  },
+};
+
 export const TYPE_COLORS: Record<PokemonType, string> = {
   normal: '#A8A77A',
   fire: '#EE8130',
