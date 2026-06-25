@@ -7,6 +7,9 @@ import { PokedexScreen } from '@/pages/PokedexScreen';
 import { ShinyStartScreen } from '@/pages/ShinyStartScreen';
 import { ShinyGameScreen } from '@/pages/ShinyGameScreen';
 import { ShinyResultScreen } from '@/pages/ShinyResultScreen';
+import { TypesStartScreen } from '@/pages/TypesStartScreen';
+import { TypesGameScreen } from '@/pages/TypesGameScreen';
+import { TypesResultScreen } from '@/pages/TypesResultScreen';
 
 export default function App() {
   return (
@@ -19,6 +22,9 @@ export default function App() {
       <Route path="/shiny" element={<ShinyStartScreen />} />
       <Route path="/shiny/play" element={<ShinyGameScreen />} />
       <Route path="/shiny/result" element={<ShinyResultScreen />} />
+      <Route path="/types" element={<TypesStartScreen />} />
+      <Route path="/types/play" element={<TypesGameScreen />} />
+      <Route path="/types/result" element={<TypesResultScreen />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
