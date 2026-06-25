@@ -98,6 +98,41 @@ export const SHINY_MODES: Record<GameMode, ModeConfig> = {
   },
 };
 
+/**
+ * Submodos del modo "Maestro de Tipos". El jugador escribe un Pokémon cuyos
+ * tipos coincidan EXACTAMENTE con los pedidos. Mismos tiempos que el principal.
+ */
+export const TYPES_MODES: Record<GameMode, ModeConfig> = {
+  classic: {
+    id: 'classic',
+    label: 'Clásico',
+    seconds: 10,
+    autocomplete: false,
+    description: '10 segundos · a pensar',
+  },
+  hard: {
+    id: 'hard',
+    label: 'Difícil',
+    seconds: 5,
+    autocomplete: false,
+    description: '5 segundos · rápido',
+  },
+  expert: {
+    id: 'expert',
+    label: 'Experto',
+    seconds: 3,
+    autocomplete: false,
+    description: '3 segundos · memoria pura',
+  },
+  infinite: {
+    id: 'infinite',
+    label: 'Infinito',
+    seconds: 10,
+    autocomplete: false,
+    description: 'Hasta el primer fallo',
+  },
+};
+
 export const TYPE_COLORS: Record<PokemonType, string> = {
   normal: '#A8A77A',
   fire: '#EE8130',
