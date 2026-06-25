@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { TypeBadges } from '@/components/TypeBadges';
@@ -7,6 +8,7 @@ import { Timer } from '@/components/Timer';
 import { TypesScoreBoard } from '@/components/TypesScoreBoard';
 
 import { useTimer } from '@/hooks/useTimer';
+import { fetchPokemon } from '@/services/pokeapi';
 import { useTypeChallenges, type TypeChallenge } from '@/hooks/useTypeChallenges';
 import { useTypesStore } from '@/store/typesStore';
 import { useGameStore } from '@/store/gameStore';
@@ -34,8 +36,12 @@ export function TypesGameScreen() {
   const [revealed, setRevealed] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [shake, setShake] = useState(false);
+  // Pokémon acertado (imagen + nombre) para mostrarlo al revelar.
+  const [wonImage, setWonImage] = useState<string | null>(null);
+  const [wonName, setWonName] = useState<string>('');
   const settledRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   const playSfx = useCallback(
     (fn: () => void) => {
@@ -80,7 +86,7 @@ export function TypesGameScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, challenge]);
 
-  const submit = () => {
+  const submit = async () => {
     if (settledRef.current || !challenge || !value.trim()) return;
     const res = validate(value, challenge);
 
@@ -88,6 +94,7 @@ export function TypesGameScreen() {
       settledRef.current = true;
       stop();
       registerCorrect();
+      setWonName(res.matched!.displayName);
       setRevealed(true);
       setFeedback({
         kind: 'correct',
@@ -95,6 +102,19 @@ export function TypesGameScreen() {
       });
       playSfx(sfx.correct);
       playSfx(sfx.reveal);
+
+      // Trae el artwork del Pokémon acertado (reusa la caché si ya se pidió).
+      try {
+        const poke = await queryClient.fetchQuery({
+          queryKey: ['pokemon', res.matched!.id],
+          queryFn: () => fetchPokemon(res.matched!.id),
+          staleTime: Infinity,
+          gcTime: Infinity,
+        });
+        setWonImage(poke.image);
+      } catch {
+        setWonImage(null);
+      }
     } else {
       // Respuesta incorrecta: NO termina la ronda, deja reintentar hasta que
       // expire el tiempo. Solo da feedback y sacude el input.
@@ -121,6 +141,8 @@ export function TypesGameScreen() {
     setRevealed(false);
     setFeedback(null);
     setValue('');
+    setWonImage(null);
+    setWonName('');
     const c = loadChallenge();
     if (c) {
       start();
@@ -215,6 +237,34 @@ export function TypesGameScreen() {
         ) : (
           challenge && (
             <div className="flex flex-col items-center gap-4">
+              {wonImage && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.6, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 16 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="relative rounded-3xl border-4 border-green-400 bg-green-400/10 p-3 shadow-retro">
+                    <img
+                      src={wonImage}
+                      alt={wonName}
+                      draggable={false}
+                      className="h-32 w-32 select-none object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)] sm:h-40 sm:w-40"
+                    />
+                    <motion.span
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: [0, 1.3, 1], opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.15 }}
+                      className="absolute right-2 top-2 text-2xl"
+                    >
+                      ✅
+                    </motion.span>
+                  </div>
+                  <p className="mt-2 font-display text-sm text-white text-stroke">
+                    {wonName}
+                  </p>
+                </motion.div>
+              )}
               <div className="w-full rounded-2xl border-4 border-poke-black bg-poke-darkblue/60 p-4 text-center">
                 <p className="font-display text-[10px] text-poke-white/60">
                   ALGUNOS VÁLIDOS{' '}
